@@ -3,6 +3,7 @@ const cityInput = document.getElementById('cityInput');
 const loader = document.getElementById('loader');
 const tempValue = document.getElementById('tempValue');
 const unitText = document.getElementById('unitText');
+const clearBtn = document.getElementById('clearBtn');
 
 let currentTempCelsius = null;
 let isCelsius = true;
@@ -33,7 +34,7 @@ async function searchByCity(cityName) {
         }
 
         const { latitude, longitude, name, country } = geoData.results[0];
-        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=relative_humidity_2m,visibility&daily=weathercode,temperature_2m_max&timezone=auto`;
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=relative_humidity_2m,visibility&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`;
 
         const weatherResponse = await fetch(weatherUrl);
         const weatherData = await weatherResponse.json();
@@ -83,17 +84,23 @@ function updateForecast(dailyData) {
 
     for (let i = 0; i < 5; i++) {
         const dateRaw = new Date(dailyData.time[i]);
-        const dateString = dateRaw.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' });
+
+        const dayNumber = dateRaw.getDate();
+        const monthName = dateRaw.toLocaleDateString(undefined, { month: 'short' });
+        const weekDay = dateRaw.toLocaleDateString(undefined, { weekday: 'short' });
+        const fullDateString = `${dayNumber} ${monthName}, ${weekDay}`;
+
         const tempMax = Math.round(dailyData.temperature_2m_max[i]);
+        const tempMin = Math.round(dailyData.temperature_2m_min[i]);
         const code = dailyData.weathercode[i];
 
         let statusText = code <= 3 ? "Clear" : (code <= 67 ? "Rainy" : "Cloudy");
 
         const li = document.createElement('li');
         li.innerHTML = `
-            <span class="forecast-date">${dateString}</span>
+            <span class="forecast-date" style="flex: 1.5;">${fullDateString}</span>
             <span class="forecast-status">${statusText}</span>
-            <span class="forecast-temp">${tempMax}°C</span>
+            <span class="forecast-temp" style="flex: 1.2; text-align: right;">${tempMax}° / ${tempMin}°C</span>
         `;
         forecastList.appendChild(li);
     }
@@ -110,6 +117,21 @@ document.getElementById('tempContainer').addEventListener('click', () => {
         tempValue.innerText = Math.round((currentTempCelsius * 9 / 5) + 32);
         unitText.innerText = "°F";
     }
+});
+
+cityInput.addEventListener('input', () => {
+    if (cityInput.value.length > 0) {
+        clearBtn.style.display = 'block';
+    } else {
+        clearBtn.style.display = 'none';
+    }
+});
+
+// ক্রস বাটনে ক্লিক করলে ইনপুট ক্লিয়ার হবে
+clearBtn.addEventListener('click', () => {
+    cityInput.value = '';
+    clearBtn.style.display = 'none';
+    cityInput.focus(); // ক্লিয়ার করার পর আবার টাইপ করার জন্য ফোকাস করবে
 });
 
 const yearSpan = document.getElementById('copyrightYear');

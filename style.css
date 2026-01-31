@@ -189,3 +189,22 @@ body {
         text-align: center;
     }
 }
+
+.clear-icon {
+    position: absolute;
+    right: 15px;
+    cursor: pointer;
+    color: black;
+    font-size: 22px;
+    display: none;
+    transition: 0.3s;
+    user-select: none;
+}
+
+.clear-icon:hover {
+    color: gray;
+}
+
+.search-container input {
+    padding-right: 40px;
+}
