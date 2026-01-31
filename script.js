@@ -4,6 +4,7 @@ const loader = document.getElementById('loader');
 const tempValue = document.getElementById('tempValue');
 const unitText = document.getElementById('unitText');
 const clearBtn = document.getElementById('clearBtn');
+const locationBtn = document.getElementById('locationBtn');
 
 let currentTempCelsius = null;
 let isCelsius = true;
@@ -126,12 +127,47 @@ cityInput.addEventListener('input', () => {
         clearBtn.style.display = 'none';
     }
 });
+async function searchByCoords(lat, lon) {
+    loader.style.display = 'block';
+    try {
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m,visibility&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`;
+        
+        const weatherResponse = await fetch(weatherUrl);
+        const weatherData = await weatherResponse.json();
 
-// ক্রস বাটনে ক্লিক করলে ইনপুট ক্লিয়ার হবে
+        const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+        const geoData = await geoRes.json();
+        const cityName = geoData.address.city || geoData.address.town || geoData.address.village || "Current Location";
+
+        updateUI(cityName, geoData.address.country || "", weatherData);
+        updateForecast(weatherData.daily);
+    } catch (error) {
+        alert("Unable to fetch location data!");
+    } finally {
+        loader.style.display = 'none';
+    }
+}
+
+locationBtn.addEventListener('click', () => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                searchByCoords(latitude, longitude);
+            },
+            () => {
+                alert("Location access denied. Please enable location permissions.");
+            }
+        );
+    } else {
+        alert("Geolocation is not supported by your browser.");
+    }
+});
+
 clearBtn.addEventListener('click', () => {
     cityInput.value = '';
     clearBtn.style.display = 'none';
-    cityInput.focus(); // ক্লিয়ার করার পর আবার টাইপ করার জন্য ফোকাস করবে
+    cityInput.focus();
 });
 
 const yearSpan = document.getElementById('copyrightYear');
