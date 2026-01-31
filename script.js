@@ -21,7 +21,7 @@ async function searchByCity(cityName) {
         alert("Please enter a city name!");
         return;
     }
-    
+
     loader.style.display = 'block';
     try {
         const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${cityName}&count=1`);
@@ -34,7 +34,7 @@ async function searchByCity(cityName) {
 
         const { latitude, longitude, name, country } = geoData.results[0];
         const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&hourly=relative_humidity_2m,visibility&daily=weathercode,temperature_2m_max&timezone=auto`;
-        
+
         const weatherResponse = await fetch(weatherUrl);
         const weatherData = await weatherResponse.json();
 
@@ -78,7 +78,7 @@ function updateUI(name, country, data) {
 function updateForecast(dailyData) {
     const forecastList = document.getElementById('dailyForecastList');
     if (!forecastList) return;
-    
+
     forecastList.innerHTML = "";
 
     for (let i = 0; i < 5; i++) {
@@ -102,7 +102,7 @@ function updateForecast(dailyData) {
 document.getElementById('tempContainer').addEventListener('click', () => {
     if (currentTempCelsius === null) return;
     isCelsius = !isCelsius;
-    
+
     if (isCelsius) {
         tempValue.innerText = Math.round(currentTempCelsius);
         unitText.innerText = "°C";
@@ -112,9 +112,14 @@ document.getElementById('tempContainer').addEventListener('click', () => {
     }
 });
 
+const yearSpan = document.getElementById('copyrightYear');
+if (yearSpan) {
+    yearSpan.innerText = new Date().getFullYear();
+}
+
 searchBtn.addEventListener('click', () => searchByCity(cityInput.value.trim()));
 
-cityInput.addEventListener('keypress', (e) => { 
+cityInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         searchByCity(cityInput.value.trim());
     }
